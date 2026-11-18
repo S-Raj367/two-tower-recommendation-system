@@ -1,35 +1,31 @@
 import streamlit as st
 import requests
 
-# Replace this with your actual Render URL once deployed, or use your local testing URL
-API_URL = "https://your-api-name.onrender.com/predict" 
+# 1. Update this to your actual live Render URL (do not add a slash at the end)
+API_BASE_URL = "https://your-api-name.onrender.com" 
 
 st.title("Industrial Recommender System")
-st.write("Enter a user or item ID to get AI-driven recommendations.")
+st.write("Enter a user ID to get AI-driven recommendations.")
 
-# Create the user interface elements
-user_id = st.text_input("Enter User ID", value="12345")
+user_id = st.text_input("Enter User ID", value="1256")
 top_k = st.slider("Number of recommendations to return", min_value=1, max_value=20, value=5)
 
 if st.button("Get Recommendations"):
     with st.spinner("Fetching data from the recommendation engine..."):
         try:
-            # Package the user input into a JSON format expected by your API
-            payload = {
-                "user_id": user_id, 
-                "top_k": top_k
-            }
+            # 2. Construct the exact URL expected by your FastAPI router
+            # Format: https://your-url.onrender.com/recommend/1256?top_k=5
+            request_url = f"{API_BASE_URL}/recommend/{user_id}?top_k={top_k}"
             
-            # Send the request to your backend API
-            response = requests.post(API_URL, json=payload)
+            # 3. Send a GET request (matching @app.get in your backend)
+            response = requests.get(request_url)
             
-            # Display the results
             if response.status_code == 200:
                 data = response.json()
                 st.success("Recommendations retrieved successfully!")
                 
-                # Streamlit automatically formats dictionaries/JSON as clean tables or drop-downs
-                st.json(data)
+                # Display the 'recommendations' array from the backend response
+                st.json(data["recommendations"])
             else:
                 st.error(f"API Error {response.status_code}: {response.text}")
                 
